@@ -60,10 +60,9 @@ python manage.py runserver
 
 - List all purchase orders: `GET /api/purchase_orders/`
 ![](img/list_po.png)
-- Create a new purchase order: `POST /api/purchase_orders/`
+- Create a new purchase order: `POST /api/purchase_orders/`   (require: authentication)
 ```
 {
-    "vendor": "Raj",
     "delivery_date": "2024-06-04",
     "items": {
         "1":{
@@ -81,35 +80,37 @@ python manage.py runserver
     "quantity": 12
 }
 ```
-- Retrieve a purchase order by ID: `GET /api/purchase_orders/<id>/`
+- Retrieve a purchase order by ID: `GET /api/purchase_orders/<id>/`   (require: authentication)
 ![](img/po_details.png)
-- Update a purchase order by ID: `PUT /api/purchase_orders/<id>/` or `PATCH /api/purchase_orders/<id>/`
+- Update a purchase order by ID: `PUT /api/purchase_orders/<id>/` or `PATCH /api/purchase_orders/<id>/`   (require: authentication)
 ![](img/update_po.png)
-- Delete a purchase order by ID: `DELETE /api/purchase_orders/<id>/`
+- Delete a purchase order by ID: `DELETE /api/purchase_orders/<id>/`    (require: authentication)
 ![](img/delete_po.png)
 
 ### Vendor Profile Management
 
 - List all vendors: `GET /api/vendors/`
 ![](img/list_vendors.png)
-- Create a new vendor: `POST /api/vendors/`
+- Create a new vendor: `POST /api/vendors/`   (require: authentication)
 ![](img/create_vendor.png)
-- Retrieve a vendor by ID: `GET /api/vendors/<id>/`
+- Retrieve a vendor by ID: `GET /api/vendors/<id>/`   (require: authentication)
 ![](img/vendor_details.png)
-- Update a vendor by ID: `PUT /api/vendors/<id>/` or `PATCH /api/vendors/<id>/`
+- Update a vendor by ID: `PUT /api/vendors/<id>/` or `PATCH /api/vendors/<id>/`   (require: authentication)
 ![](img/update_vendor.png)
-- Delete a vendor by ID: `DELETE /api/vendors/<id>/`
+- Delete a vendor by ID: `DELETE /api/vendors/<id>/`    (require: authentication)
 ![](img/delete_vendor.png)
 
 ### Other
 
 - Vendor Performance Endpoint: `GET /api/vendors/{vendor_id}/performance/`
 ![](img/vendor_perfo.png)
-- Update Acknowledgment Endpoint: `POST /api/purchase_orders/{po_id}/acknowledge`
+- Update Acknowledgment Endpoint: `POST /api/purchase_orders/{po_id}/acknowledge`   (require: authentication)
 ![](img/ack_po.png)
 
 ## Additional Notes
 
+
+- Ensure to include the following token in the header files for authentication: 'Authorization:Bearer TOKEN'
 - Performance metrics are efficiently computed by utilizing existing data, ensuring quicker response times when handling large datasets.
 - Upon saving a Purchase Order, the system automatically calculates new performance metrics and updates historical performance records.
 - To flag an issue in the Update Purchase Order API call, include issue=TRUE in the request body.
