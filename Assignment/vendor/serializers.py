@@ -3,57 +3,89 @@ from .models import Vendor, PurchaseOrder, HistoricalPerformance
 from django.utils import timezone
 
 class VendorCreateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = Vendor
-        fields = ['id','name', 'contact_details', 'address', 'vendor_code']
+        fields = ['id', 'name', 'contact_details', 'address', 'vendor_code', 'password']
+        read_only_fields = ['id']
 
-    read_only=['id']
     def validate(self, attrs):
+        contact = attrs.get('contact_details')
+        if contact and contact[0] == '+' and len(contact) == 13:
+            attrs['contact_details'] = contact[3:]
+        elif contact and len(contact) == 0 and contact[0] == '0':
+            attrs['contact_details'] = contact[1:]
+        elif contact and len(contact) < 10:
+            raise serializers.ValidationError("Enter valid contact details.")
 
-        contact=attrs.get('contact_details')
-        if contact[0]=='+' and len(contact)==13:
-            attrs['contact_details']=contact[3:]
-        elif len(contact)==0 and contact[0]=='0':
-            attrs['contact_details']=contact[1:]
-        elif len(contact)<10:
-             raise serializers.ValidationError("enter valid contact details.")
-            
         return attrs
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')  
+        vendor = Vendor.objects.create(**validated_data)
+        vendor.set_password(password)
+        vendor.save()
+        return vendor
+    
+
+class VendorUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Vendor
+        fields = ['id', 'name', 'contact_details', 'address', 'vendor_code']
+        read_only_fields = ['id']
+
+    def validate(self, attrs):
+        contact = attrs.get('contact_details')
+        if contact and contact[0] == '+' and len(contact) == 13:
+            attrs['contact_details'] = contact[3:]
+        elif contact and len(contact) == 0 and contact[0] == '0':
+            attrs['contact_details'] = contact[1:]
+        elif contact and len(contact) < 10:
+            raise serializers.ValidationError("Enter valid contact details.")
+
+        return attrs
+
+    def update(self, instance, validated_data):
+        
+        instance.name = validated_data.get('name', instance.name)
+        instance.contact_details = validated_data.get('contact_details', instance.contact_details)
+        instance.address = validated_data.get('address', instance.address)
+        instance.vendor_code = validated_data.get('vendor_code', instance.vendor_code)
+        instance.save()
+        return instance
 
 class VendorRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
-        fields = '__all__'
+        fields = ['id', 'name', 'contact_details', 'address', 'vendor_code']
+
+
+class VendorPerformanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vendor
+        fields = ['id','vendor_code','on_time_delivery_rate','quality_rating_avg','average_response_time','fulfillment_rate']
 
 
 class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
-    vendor = serializers.CharField(max_length=50)
     
     class Meta:
         model = PurchaseOrder
-        fields = ['po_number','vendor', 'order_date', 'status','delivery_date', 'items', 'quantity', 'quality_rating' ,'issue_date']
+        fields = ['po_number', 'order_date', 'status','delivery_date', 'items', 'quantity', 'quality_rating' ,'issue_date']
 
     def create(self, validated_data):
-        vendor_code = validated_data.pop('vendor', None)
-        quality_rating=validated_data.pop('quality_rating',None)
-        if quality_rating != None:
-            if quality_rating<0 and quality_rating>5:
-                raise serializers.ValidationError("quality_rating should be between 0 to 5")
-
-        # Check if vendor_code is provided
-        if vendor_code:
-            try:
-                # Fetch the Vendor object based on the provided vendor_code
-                vendor = Vendor.objects.get(vendor_code=vendor_code)
-            except Vendor.DoesNotExist:
-                # If vendor does not exist, raise a ValidationError
-                raise serializers.ValidationError("Vendor does not exist")
-            
-            # Assign the fetched Vendor object to the vendor field of the validated data
-            validated_data['vendor'] = vendor
+        quality_rating = validated_data.pop('quality_rating', None)
         
-        # Create and return the PurchaseOrder instance
-        return PurchaseOrder.objects.create(**validated_data)       
+        # Validate quality_rating if it exists
+        if quality_rating is not None and not (0 <= quality_rating <= 5):
+            raise serializers.ValidationError("quality_rating should be between 0 to 5")
+
+        vendor = self.context['request'].user
+        validated_data['vendor'] = vendor
+        
+        return PurchaseOrder.objects.create(**validated_data)  
+
 
 class PurchaseOrderUpdateSerializer(serializers.ModelSerializer):
     class Meta:

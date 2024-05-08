@@ -1,8 +1,22 @@
 from typing import Iterable
 from django.db import models
-import uuid
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-class Vendor(models.Model):
+class CustomUserManager(BaseUserManager):
+    def create_user(self, vendor_code, password=None, **extra_fields):
+        if not vendor_code:
+            raise ValueError('The Vendor Code field must be set')
+        user = self.model(vendor_code=vendor_code, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, vendor_code, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(vendor_code, password, **extra_fields)
+
+class Vendor(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=100)
     contact_details = models.TextField(unique=True)
     address = models.TextField()
@@ -11,9 +25,30 @@ class Vendor(models.Model):
     quality_rating_avg = models.FloatField(default=0)
     average_response_time = models.FloatField(default=0)
     fulfillment_rate = models.FloatField(default=0)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    
+    USERNAME_FIELD = 'vendor_code'
+    REQUIRED_FIELDS = ['name', 'contact_details', 'address']
+
+    objects = CustomUserManager()
 
     def __str__(self):
         return self.vendor_code
+
+
+# class Vendor(models.Model):
+#     name = models.CharField(max_length=100)
+#     contact_details = models.TextField(unique=True)
+#     address = models.TextField()
+#     vendor_code = models.CharField(max_length=50, unique=True)
+#     on_time_delivery_rate = models.FloatField(default=0)
+#     quality_rating_avg = models.FloatField(default=0)
+#     average_response_time = models.FloatField(default=0)
+#     fulfillment_rate = models.FloatField(default=0)
+
+#     def __str__(self):
+#         return self.vendor_code
 
 class PurchaseOrder(models.Model):
     PENDING ='Pending'
