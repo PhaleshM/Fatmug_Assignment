@@ -1,6 +1,3 @@
-Sure, here's a sample README file for your project:
-
-
 # Fatmug Assignment
 
 This project is developed as a part of the Fatmug assignment. It includes functionalities related to managing purchase orders and vendors.
@@ -10,7 +7,7 @@ This project is developed as a part of the Fatmug assignment. It includes functi
 1. Clone the repository:
 
 ```
-git clone <repository_url>
+git clone https://github.com/PhaleshM/Fatmug_Assignment.git
 ```
 
 2. Navigate to the project directory:
