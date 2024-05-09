@@ -91,8 +91,10 @@ python manage.py runserver
 
 - List all vendors: `GET /api/vendors/`
 ![](img/list_vendors.png)
-- Create a new vendor: `POST /api/vendors/`   (require: authentication)
+- Create a new vendor: `POST /api/vendors/`   
 ![](img/create_vendor.png)
+- Login vendor: `POST /api/vendors/login/`   
+![](img/login_vendor.png)
 - Retrieve a vendor by ID: `GET /api/vendors/<id>/`   (require: authentication)
 ![](img/vendor_details.png)
 - Update a vendor by ID: `PUT /api/vendors/<id>/` or `PATCH /api/vendors/<id>/`   (require: authentication)
